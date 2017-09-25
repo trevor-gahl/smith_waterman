@@ -1,15 +1,41 @@
-seq1 = "ATAGACGACATACAGACAGCATACAGACAGCATACAGA"
+import sys
+
+seq1 = "ATAGACGACATGGGGACAGCATACAGACAGCATACAGA"
 seq2 = "TTTAGCATGCGCATATCAGCAATACAGACAGATACG"
 
-rows = len(seq1) + 1
-cols = len(seq2) + 1
 match = 2
 other = -1
 maxScore = 0
 maxPosition = (0, 0)
 
+def main():
+    rows = len(seq1) + 1
+    cols = len(seq2) + 1
+
+    score_matrix, start_pos = createScoreMatrix(rows, cols)
+
+    seq1_aligned, seq2_aligned = traceback(score_matrix, start_pos)
+
+    assert len(seq1_aligned) == len(seq2_aligned), 'aligned strings are not the same size'
+
+# Pretty print the results. The printing follows the format of BLAST results
+# as closely as possible.
+    alignment_str, idents, gaps, mismatches = alignment_string(seq1_aligned, seq2_aligned)
+    alength = len(seq1_aligned)
+    print()
+    print(' Identities = {0}/{1} ({2:.1%}), Gaps = {3}/{4} ({5:.1%})'.format(idents,
+        alength, idents / alength, gaps, alength, gaps / alength))
+    print()
+    for i in range(0, alength, 60):
+        seq1_slice = seq1_aligned[i:i+60]
+        print('Query  {0:<4}  {1}  {2:<4}'.format(i + 1, seq1_slice, i + len(seq1_slice)))
+        print('             {0}'.format(alignment_str[i:i+60]))
+        seq2_slice = seq2_aligned[i:i+60]
+        print('Sbjct  {0:<4}  {1}  {2:<4}'.format(i + 1, seq2_slice, i + len(seq2_slice)))
+        print()
 
 def createScoreMatrix(rows,cols):
+    global maxScore
     score_matrix = [[0 for col in range(cols)]for row in range(rows)]
 
     for i in range(1, rows):
@@ -28,7 +54,7 @@ def createScoreMatrix(rows,cols):
     print(maxScore)
     print(maxPosition)
     print(rows, cols)
-
+    return score_matrix, maxPosition
 
 def traceback(score_matrix, start_pos):
 
@@ -36,7 +62,7 @@ def traceback(score_matrix, start_pos):
     aligned_seq1 = []
     aligned_seq2 = []
     x, y         = start_pos
-    move         = next_move(score_matrix, x, y)
+    move         = nextMove(score_matrix, x, y)
     while move != END:
         if move == DIAG:
             aligned_seq1.append(seq1[x - 1])
@@ -52,7 +78,7 @@ def traceback(score_matrix, start_pos):
             aligned_seq2.append(seq2[y - 1])
             y -= 1
 
-        move = next_move(score_matrix, x, y)
+        move = nextMove(score_matrix, x, y)
 
     aligned_seq1.append(seq1[x - 1])
     aligned_seq2.append(seq1[y - 1])
@@ -74,3 +100,24 @@ def nextMove(score_matrix, x, y):
     else:
         # Execution should not reach here.
         raise ValueError('invalid move during traceback')
+
+def alignment_string(aligned_seq1, aligned_seq2):
+    idents, gaps, mismatches = 0, 0, 0
+    alignment_string = []
+    for base1, base2 in zip(aligned_seq1, aligned_seq2):
+        if base1 == base2:
+            alignment_string.append('|')
+            idents += 1
+        elif '-' in (base1, base2):
+            alignment_string.append(' ')
+            gaps += 1
+        else:
+            alignment_string.append(':')
+            mismatches += 1
+
+    return ''.join(alignment_string), idents, gaps, mismatches
+
+
+
+if __name__ == '__main__':
+    sys.exit(main())
