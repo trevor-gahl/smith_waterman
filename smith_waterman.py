@@ -1,10 +1,18 @@
+#########################################################################
+## Name: Trevor Gahl, David Schwer, Procassius Loftin                  ##
+## Course: Computational Biology                                       ##
+## Date: 9/25/17                                                       ##
+## About: Python implementation of smith-waterman algorithm            ##
+##        based on work from https://gist.github.com/radaniba/11019717 ##
+#########################################################################
+
 import sys
-'''
-seq1 = "ATAGACGACATGGGGACAGCATACAGACAGCATACAGA"
-seq2 = "TTTAGCATGCGCATATCAGCAATACAGACAGATACG"
-'''
-seq1 = 'AGCACACA'
-seq2 = 'ACACACTA'
+
+seq1 = "ATAGACGACATGGGGACAGCAT"
+seq2 = "TTTAGCATGCGCATATCAGCAATA"
+
+#seq1 = 'AGCACACA'
+#seq2 = 'ACACACTA'
 
 match = 2
 other = -1
@@ -64,7 +72,7 @@ def createScoreMatrix(rows,cols):
     print(maxPosition)
     print(rows, cols)
     '''
-    print('SCORE MATRIX')
+    print('\nSCORE MATRIX: \n')
     print_matrix(score_matrix)
     return score_matrix, maxPosition
 
